@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mr Lumala – Your AI teacher for History and CRE</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&family=Caveat:wght@600&display=swap">
+<style>
+:root{--bg:#F2F7FA;--ink:#14213D;--line:#CFE0EA;--green:#1E7A4C;--yellow:#FFC93C;--red:#D62F3A;--surface:#fff;--muted:#4A5B73;--onyellow:#14213D;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101826;--ink:#EAF0F7;--line:#22324A;--green:#4CC38A;--red:#FF6B76;--surface:#18233A;--muted:#9FB0C7}}
+:root[data-theme="dark"]{--bg:#101826;--ink:#EAF0F7;--line:#22324A;--green:#4CC38A;--red:#FF6B76;--surface:#18233A;--muted:#9FB0C7}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Lexend,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;
+background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--line) 31px,var(--line) 32px);min-height:100vh}
+main{max-width:600px;margin:0 auto;padding:28px 20px 48px;border-left:2px solid var(--red);margin-left:max(12px,calc(50% - 300px))}
+h1{font-size:2rem;font-weight:800;margin:0 0 4px;line-height:1.15}
+p{margin:0 0 12px;max-width:62ch;white-space:pre-wrap}
+.sub{color:var(--muted)}
+.hand{font-family:Caveat,"Segoe Script",cursive;font-size:1.5rem;font-weight:600;color:var(--red);line-height:1.2}
+button,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.row{display:flex;gap:10px;margin:14px 0}
+.tab{flex:1;background:var(--surface);border:2px solid var(--ink);border-radius:6px;padding:10px;font-weight:600}
+.tab[aria-pressed="true"]{background:var(--green);color:#fff}
+select{width:100%;background:var(--surface);border:2px solid var(--ink);border-radius:6px;padding:10px;margin:4px 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{background:var(--surface);border:1.5px solid var(--muted);border-radius:20px;padding:6px 14px;font-size:.92rem}
+.msg{margin:0 0 14px}
+.msg.me{text-align:right}
+.msg.me p{display:inline-block;text-align:left;background:var(--yellow);color:var(--onyellow);padding:8px 14px;border-radius:6px;margin:0}
+.msg.ai{border-left:4px solid var(--green);padding-left:12px}
+.msg.ai .hand{display:block}
+textarea{width:100%;background:var(--surface);border:2px solid var(--ink);border-radius:6px;padding:10px;resize:vertical;margin-top:8px}
+.btn{background:var(--yellow);color:var(--onyellow);border:2px solid var(--ink);border-radius:6px;padding:12px 24px;font-weight:600;margin:8px 8px 0 0}
+.btn:disabled{opacity:.5;cursor:default}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;padding:10px 12px 0 0}
+details{margin-bottom:8px}summary{cursor:pointer;font-weight:600;padding:6px 0}.chips{margin:6px 0 10px}#chips{margin-bottom:18px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:6px}.logo{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid var(--ink);background:var(--surface)}.av{width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;border:2px solid var(--ink)}
+</style>
+</head>
+<body>
+<main>
+<div class="head"><img class="logo" id="logo" alt="Mr Lumala"><h1>Mr Lumala</h1></div>
+<p class="sub">Your AI teacher for History and CRE. Ask a question, or pick a topic.</p>
+<div class="row" role="group" aria-label="Subject">
+<button class="tab" data-s="History" aria-pressed="true">History</button>
+<button class="tab" data-s="CRE" aria-pressed="false">CRE</button>
+</div>
+<label class="sub" for="lv">Level</label>
+<select id="lv"><option>Primary</option><option selected>O-Level (S.1–S.4)</option><option>A-Level (S.5–S.6)</option></select>
+<div id="chips"></div>
+<div id="log" aria-live="polite"></div>
+<label class="sub" for="in">Your question</label>
+<textarea id="in" rows="2" placeholder="Example: Why did the Buganda Kingdom sign the 1900 Agreement?"></textarea>
+<button class="btn" id="send">Ask Mr Lumala</button>
+<button class="link" id="quiz">Quiz me</button>
+<button class="link" id="essay">Essay practice</button>
+<button class="link" id="clr">Start over</button>
+</main>
+<script>
+var LOGO="data:image/jpeg;base64,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";
+var TOP={History:{"Uganda":["Early peoples and sources of history","Buganda, Bunyoro-Kitara and Ankole kingdoms","Acholi, Lango, Busoga and Karamoja societies","Arab and Swahili traders in Uganda","Explorers and missionaries","British colonisation and the 1900 Agreement","Colonial rule: economy, education, indirect rule","Nationalism and independence 1962","Obote I and the 1966 crisis","Amin’s regime 1971–1979","1979–1986: the bush war and the NRM"],
+"Africa":["Ancient Egypt and Ethiopia (Aksum)","Empires of Ghana, Mali and Songhai","Trans-Saharan and Indian Ocean trade","Atlantic slave trade and its abolition","Scramble for Africa and the Berlin Conference","African resistance: Maji Maji, Mau Mau, Nandi","Colonial rule: British, French and Portuguese","Pan-Africanism and independence movements","South Africa: Zulu, Mfecane and apartheid","African Union and the East African Community"],
+"World":["Renaissance and the Reformation","The Industrial Revolution","The American Revolution","The French Revolution","World War I and the Treaty of Versailles","The Russian Revolution","League of Nations and the rise of dictators","World War II","The United Nations","The Cold War","Decolonisation in Asia and Africa"]},
+CRE:{"Old Testament":["Introduction to the Bible","Creation and the Fall","Abraham and the covenant","Moses and the Exodus","The Ten Commandments and the Sinai covenant","Kings: Saul, David and Solomon","Prophets: Elijah, Amos, Hosea, Isaiah, Jeremiah","The exile and return"],
+"Life of Jesus":["Birth and baptism of Jesus","Temptation and calling of the disciples","Parables of Jesus","Miracles of Jesus","The Sermon on the Mount","Passion, death and resurrection"],
+"Early Church and Paul":["Pentecost and the early church","Peter and Stephen","Paul’s conversion and missionary journeys","Paul’s letters","Unity and gifts of the Spirit"],
+"Christianity in Uganda and Africa":["Coming of Christianity to Uganda","The Uganda Martyrs","African Traditional Religion and Christianity","The Church and politics in Africa"],
+"Christian living":["Marriage and family","Work and leadership","Sin, forgiveness and salvation","HIV/AIDS, drugs and Christian responsibility","Human rights and justice","Caring for the environment"]}};
+var subj="History",H=[],busy=false,fn=null;
+var log=document.getElementById("log"),inp=document.getElementById("in"),send=document.getElementById("send"),lv=document.getElementById("lv");
+function intro(){return "You are Mr Lumala, a kind and clear teacher for students in Uganda. Subject: "+subj+(subj==="CRE"?" (Christian Religious Education)":"")+". Level: "+lv.value+". Follow the Ugandan O-Level and A-Level syllabus (UNEB). For History, cover Ugandan, African and world history and link them (for example, how the Berlin Conference led to the 1900 Agreement). For CRE, cover the Old Testament, the life of Jesus, the early church, Christianity in Uganda and Africa, and Christian living. For Primary and O-Level give key facts, causes and effects. For A-Level go deeper with analysis, comparison and essay structure. Use simple words and short paragraphs. Write plain text only, with no markdown symbols, and keep answers under 200 words unless asked for more. For CRE, give Bible references and respect Christian teaching. If the student asks for a quiz, ask one question at a time and wait for the answer. End explanations with one short question to check understanding. If the question is off subject, gently bring the student back to "+subj+"."}
+function add(role,text){var d=document.createElement("div");d.className="msg "+role;
+if(role==="ai"){var n=document.createElement("span");n.className="hand";var a=document.createElement("img");a.className="av";a.src=LOGO;a.alt="";n.textContent="Mr Lumala";n.prepend(a);d.appendChild(n)}
+var p=document.createElement("p");p.textContent=text;d.appendChild(p);log.appendChild(d);d.scrollIntoView({block:"nearest"});return p}
+function reset(){H=[];log.textContent="";add("ai","Hello! I’m Mr Lumala. Ask me anything about "+subj+", or tap a topic above.");
+var c=document.getElementById("chips");c.textContent="";
+Object.keys(TOP[subj]).forEach(function(g){var d=document.createElement("details"),s=document.createElement("summary"),w=document.createElement("div");s.textContent=g;w.className="chips";
+TOP[subj][g].forEach(function(t){var b=document.createElement("button");b.className="chip";b.textContent=t;b.onclick=function(){ask("Explain: "+t+" ("+g+")")};w.appendChild(b)});d.appendChild(s);d.appendChild(w);c.appendChild(d)})}
+async function ask(text){
+text=(text||"").trim();if(!text||busy)return;
+busy=true;send.disabled=true;inp.value="";add("me",text);var p=add("ai","Thinking…");
+var m={role:"user",content:(H.length?"":intro()+"\n\nStudent: ")+text};
+try{
+if(!fn){fn=window.claude&&window.claude.use?await window.claude.use("sample"):null}
+if(!fn){p.textContent="The AI teacher is not available here. Open this page in the Claude app to use it.";return}
+var r=await fn(H.concat([m]),{cache:false,onText:function(o){p.textContent=o.text}});
+p.textContent=r.text;H.push(m,{role:"assistant",content:r.text});
+}catch(e){
+p.textContent=e&&e.code==="rate_limited"?"Too many questions at once. Wait a moment, then ask again.":
+e&&e.code==="not_granted"?"Permission was not given, so Mr Lumala can’t answer. Tap Ask again and allow it.":
+"Something went wrong. Check your connection and try again."}
+finally{busy=false;send.disabled=false}}
+send.onclick=function(){ask(inp.value)};
+document.getElementById("quiz").onclick=function(){ask("Quiz me on "+subj+". Ask one question at a time.")};
+document.getElementById("essay").onclick=function(){ask("Give me one UNEB-style essay question on "+subj+" for my level. Then mark my answer when I reply.")};
+document.getElementById("clr").onclick=reset;
+lv.onchange=reset;
+document.querySelectorAll(".tab").forEach(function(b){b.onclick=function(){subj=b.dataset.s;
+document.querySelectorAll(".tab").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});reset()}});
+document.getElementById("logo").src=LOGO;
+reset();
+</script>
+</body>
+</html>
